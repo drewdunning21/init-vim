@@ -11,6 +11,7 @@ set shiftwidth=4
 set expandtab
 set smartindent
 set statusline=%<%f\ %h%m%r%{FugitiveStatusline()}%=%-14.(%l,%c%V%)\ %P
+set statusline+=%{wordcount().words}\ words
 set nu
 set nowrap
 set smartcase
@@ -54,18 +55,19 @@ Plug 'pangloss/vim-javascript'
 " Vim Wiki
 Plug 'vimwiki/vimwiki'
 " Prettier
-Plug 'prettier/vim-prettier', {'do': 'yarn install'}
-" thins curson on insert
-Plug 'wincent/terminus'
+Plug 'prettier/vim-prettier', {
+  \ 'do': 'yarn install',
+  \ 'branch': 'release/0.x'
+  \ }
 " tope commenter
 Plug 'tpope/vim-commentary'
 " git
 Plug 'tpope/vim-fugitive'
 Plug 'vim-airline/vim-airline'
 " latex
-" Plug 'drewdunning21/latex-display'
+Plug 'drewdunning21/latex-display'
 Plug 'lervag/vimtex'
-Plug 'KeitaNakamura/tex-conceal.vim'
+" Plug 'KeitaNakamura/tex-conceal.vim'
 Plug 'donRaphaco/neotex', { 'for': 'tex' }
 " start screen for vim
 Plug 'tpope/vim-obsession'
@@ -84,11 +86,19 @@ Plug 'tpope/vim-surround'
 " python indent
 Plug 'Vimjas/vim-python-pep8-indent'
 " latex pdf
+" exmaple pyton plugin
+Plug 'drewdunning21/test-python-plugin'
+" java syntax highlighting
+Plug 'uiiaoo/java-syntax.vim'
+" eslint
+Plug 'eslint/eslint'
+" lsp
+Plug 'neovim/nvim-lspconfig'
 call plug#end()
 
 " Styling
 " setenv TERM xterm-256color
-set t_Co=16
+" set t_Co=16
 let g:gruvbox_contrast_dark = 'hard'
 colorscheme gruvbox
 
@@ -127,14 +137,18 @@ nnoremap di' "_di'
 nnoremap di" "_di"
 nnoremap cc "_cc
 
+" makes xi( work from range
+" nnoremap ci( f(ci(
+" nnoremap di( f(di(
+
 " ctrl delete
 inoremap <C-Backspace> <C-W>
 
 " Changes window navigation keys
-map <leader>h <C-W>h
-map <leader>l <C-W>l
-map <leader>v <C-W>v
-map <leader>w <C-W>
+" map <leader>h <C-W>h
+" map <leader>l <C-W>l
+" map <leader>v <C-W>v
+" map <leader>w <C-W>
 
 " find and replace
 nnoremap S :%s//gI<Left><Left><Left>
@@ -175,6 +189,7 @@ let g:prettier#autoformat_require_pragma = 0
 let g:prettier#config#print_width = 1000
 let g:prettier#config#single_quote = 'true'
 let g:prettier#config#semi = 'false'
+let g:prettier#config#tab_width = 4
 
 " JS syntax highlighting pangloss
 let g:javascript_plugin_jsdoc = 1
@@ -195,15 +210,7 @@ nnoremap <C-g> :Rg!
 let g:fzf_layout = { 'window' : { 'width': 0.8, 'height': 0.8 }}
 let $FZF_DEFAULT_OPTS='--reverse'
 
-" coc maps
-nmap <leader>rr <Plug>(coc-rename)
-inoremap <silent><expr> <Tab>
-      \ pumvisible() ? "\<C-n>" : "\<TAB>"
-nnoremap <leader>prw :CocSearch <C-R>=expand("<cword>")<CR><CR>
 
-nmap <leader>aa :call YourFirstPlugin() <cr>
-
-let g:coc_snippet_next = '<tab>'
 " eslint
 let g:ale_linters = {
 \  'javascript': ['eslint'],
@@ -229,17 +236,6 @@ set guicursor=n-v-c:block,i-ci-ve:ver25,r-cr:hor20,o:hor50
 " shows list of things recently yanked
 nnoremap <silent><leader>y :<C-u>CocList -A --normal yank<cr>
 
-" latex "
-" vimtex
-let g:tex_flavor='latex'
-let g:vimtex_view_method='zathura'
-let g:vimtex_quickfix_mode=0
-set conceallevel=1
-let g:tex_conceal='abdmg'
-" hi Conceal ctermbg=none
-setlocal spell
-set spelllang=en_us
-inoremap <C-k> <c-g>u<Esc>[s1z=`]a<c-g>u
 " preview
 " let g:neotex_enabled=2
 
@@ -264,15 +260,19 @@ augroup lexical
   autocmd FileType textile call lexical#init()
   autocmd FileType text call lexical#init({ 'spell': 0 })
   autocmd FileType wiki call lexical#init({ 'spell': 0 })
+  autocmd FileType py, java, js call lexical#init({ 'spell': 0 })
 augroup END
 let g:lexical#thesaurus = ['~/.config/nvim/thresaurus.txt',]
 
 augroup pencil
   autocmd!
   " autocmd FileType markdown call pencil#init({'wrap': 'hard', 'autoformat': 1})
+  autocmd FileType tex      call pencil#init({'wrap': 'soft', 'autoformat': 0})
+                            " \ | :TogglePencil
   autocmd FileType text     call pencil#init({'wrap': 'hard', 'autoformat': 0})
   autocmd FileType wiki     call pencil#init({'wrap': 'hard', 'autoformat': 0})
 augroup END" vim pencil
+let g:pencil#conceallevel=2
 
 " ditto
 au FileType markdown,wiki,txt,text,tex DittoOn  " Turn on Ditto's autocmds
@@ -289,3 +289,32 @@ nmap +d <Plug>DittoGood                " Ignore the word under the cursor
 nmap _d <Plug>DittoBad                 " Stop ignoring the word under the cursor
 nmap ]d <Plug>DittoMore                " Show the next matches
 nmap [d <Plug>DittoLess                " Show the previous matches
+
+" python commenter
+nmap <leader>cc :Comment <CR>
+
+" sources coc.vim
+source $HOME/.config/nvim/sources/coc.vim
+
+
+" latex "
+" vimtex
+let g:tex_flavor='latex'
+let g:vimtex_view_method='zathura'
+let g:vimtex_quickfix_mode=0
+set conceallevel=2
+let g:tex_conceal='abdmgs'
+" hi Conceal ctermbg=none
+setlocal spell
+set spelllang=en_us
+inoremap <C-k> <c-g>u<Esc>[s1z=`]a<c-g>u
+
+function! RunJava()
+    let fileName = expand('%:t')
+    execute ':!javac ' . fileName
+    let rootName = expand('%:t:r')
+    execute ':!java ' . rootName
+    execute ':!rm *.class'
+endfunction
+
+nnoremap <leader><C-R> :call RunJava()<CR>
